@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Artist Schedule (LIFF)</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+
+<body>
+  <header class="top">
+    <div>
+      <div class="kicker">DMD Artist Schedule Demo</div>
+      <h1 id="welcome">Loading…</h1>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="grid">
+      <div>
+        <label>Month</label>
+        <input id="monthPicker" type="month" />
+      </div>
+      <div>
+        <label>Artist</label>
+        <select id="artistFilter"></select>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div id="calendar"></div>
+  </section>
+
+  <section class="panel">
+    <div class="rowhead">
+      <div>
+        <div class="kicker">Selected date</div>
+        <div id="selectedDate" class="selected">-</div>
+      </div>
+      <div class="pill" id="selectedCount">0 events</div>
+    </div>
+
+    <div id="scheduleList"></div>
+  </section>
+
+  <div class="note">
+    *Portfolio demo — schedule data served from Google Sheets via Apps Script API.
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
