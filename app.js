@@ -1,5 +1,5 @@
 const LIFF_ID = "2008976552-16c2pVFX";
-const API_URL = "https://script.google.com/macros/s/AKfycbzuyLi5t0kb7PufrNYZ0x8stOf0j3T2u9XH7Si1hB3wvqEZ39m0vwNczYGCMcH7ayzyiQ/exec"; // <- ใส่ลิงก์ /exec ของหนู
+const API_URL = "https://script.google.com/macros/s/AKfycbzuyLi5t0kb7PufrNYZ0x8stOf0j3T2u9XH7Si1hB3wvqEZ39m0vwNczYGCMcH7ayzyiQ/exec"; // <- ใส่ลิงก์ /exec
 
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let DATA = [];
