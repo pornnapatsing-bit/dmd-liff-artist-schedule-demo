@@ -3,8 +3,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzuyLi5t0kb7PufrNYZ0x8s
 
 const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 let DATA = [];
-let ARTISTS = [];
-let ARTIST_MAP = new Map(); // key = artist_id
 let selectedDateISO = null; // YYYY-MM-DD
 
 function isoToday() {
@@ -27,39 +25,6 @@ function uniqArtists(data) {
   const set = new Set();
   data.forEach(x => parseArtists(x.artists).forEach(a => set.add(a)));
   return ["ALL", ...Array.from(set).sort()];
-}
-
-function uniqArtistsFromMaster() {
-  if (ARTISTS && ARTISTS.length) {
-    return ["ALL", ...ARTISTS.map(a => a.artist_id).filter(Boolean)];
-  }
-  return uniqArtists(DATA);
-}
-
-function getArtist(artistId) {
-  return ARTIST_MAP.get(artistId) || {
-    artist_id: artistId,
-    name: artistId,
-    ig: "",
-    img_url: "",
-  };
-}
-
-function igLink(handle){
-  const h = String(handle || "").trim().replace(/^@/, "");
-  if (!h) return "";
-  return `https://instagram.com/${encodeURIComponent(h)}`;
-}
-
-function accentFromName(name){
-  let h = 0;
-  for (let i=0; i<String(name||"").length; i++) h = (h*31 + String(name).charCodeAt(i)) >>> 0;
-  const hue = h % 360;
-  return {
-    bg: `hsl(${hue} 70% 92%)`,
-    fg: `hsl(${hue} 70% 28%)`,
-    border: `hsl(${hue} 70% 70%)`
-  };
 }
 
 // แปลง date จาก API ให้เหลือ YYYY-MM-DD
@@ -147,10 +112,13 @@ async function fetchSchedule() {
 
   const payload = await res.json();
 
-  const rawEvents = payload.events || payload;
-  const rawArtists = payload.artists || [];
+  // รองรับทั้ง 2 แบบ:
+  // 1) แบบเก่า: API ส่งเป็น array ของ events
+  // 2) แบบใหม่: API ส่งเป็น { events: [...], artists: [...] }
+  const rawEvents = Array.isArray(payload) ? payload : (payload.events || []);
+  const rawArtists = Array.isArray(payload) ? [] : (payload.artists || []);
 
-  // events
+  // Events
   DATA = rawEvents.map(x => ({
     id: x.id,
     date: normalizeDate(x.date),
@@ -158,11 +126,11 @@ async function fetchSchedule() {
     title: String(x.title || "").trim(),
     location: String(x.location || "").trim(),
     type: String(x.type || "").trim(),
-    artists: String(x.artists || "").trim(), // "KENG,NAMPING"
+    artists: String(x.artists || "").trim(),           // "KENG,NAMPING"
     artist_display: String(x.artist_display || "").trim(),
   })).filter(x => x.date);
 
-  // artists master
+  // Artists master (optional แต่แนะนำมาก)
   ARTISTS = rawArtists.map(a => ({
     artist_id: String(a.artist_id || "").trim(),
     name: String(a.name || "").trim(),
@@ -270,7 +238,7 @@ function renderDayList(ym, artist) {
   }
 
   list.forEach(item => {
-    const pills = renderArtistPills(item.artists);
+    const tags = parseArtists(item.artists).map(a => `<span class="tag">${a}</span>`).join(" ");
     const calLink = googleCalLink(item);
 
     box.innerHTML += `
@@ -280,7 +248,7 @@ function renderDayList(ym, artist) {
         <div class="small">${renderLocationLine(item.location)}</div>
 
         ${item.artist_display ? `<div class="small">👤 ${item.artist_display}</div>` : ""}
-        ${pills}
+        <div class="tags">${tags}</div>
 
         <div class="btns">
           <button onclick='window.__share(${JSON.stringify(item).replaceAll("'","\\'")})'>Share</button>
@@ -289,68 +257,6 @@ function renderDayList(ym, artist) {
       </div>
     `;
   });
-}
-
-function renderArtistPills(artistIdsCSV){
-  const ids = parseArtists(artistIdsCSV);
-  if (!ids.length) return "";
-
-  return `
-    <div class="pills">
-      ${ids.map(id => {
-        const a = getArtist(id);
-        const src = avatarUrlFor(a.name, a.img_url);
-        const ac = accentFromName(a.name);
-        const safeId = String(id).replaceAll("'","\\'");
-        return `
-          <button class="pill-artist" type="button"
-                  onclick="window.__openArtist('${safeId}')"
-                  style="background:${ac.bg}; border-color:${ac.border};">
-            <img src="${src}" alt="${a.name}" />
-            <span style="color:${ac.fg}">${a.name}</span>
-          </button>
-        `;
-      }).join("")}
-    </div>
-  `;
-}
-
-function openArtistModal(artistId){
-  const modal = document.getElementById("artistModal");
-  if (!modal) return;
-
-  const a = getArtist(artistId);
-  const src = avatarUrlFor(a.name, a.img_url);
-  const ac = accentFromName(a.name);
-
-  document.getElementById("modalAvatar").src = src;
-  document.getElementById("modalTitle").textContent = a.name;
-  document.getElementById("modalIG").textContent = a.ig ? `@${a.ig}` : "(no IG)";
-
-  const sheet = modal.querySelector(".modal-sheet");
-  if (sheet) sheet.style.borderColor = ac.border;
-
-  const igUrl = igLink(a.ig);
-  const openIG = document.getElementById("openIGBtn");
-  openIG.href = igUrl || "#";
-  openIG.style.pointerEvents = igUrl ? "auto" : "none";
-  openIG.style.opacity = igUrl ? "1" : ".45";
-
-  document.getElementById("copyIGBtn").onclick = async () => {
-    if (!a.ig) return;
-    try {
-      await navigator.clipboard.writeText(a.ig);
-      alert("Copied IG ✅");
-    } catch {
-      alert("Copy not supported");
-    }
-  };
-
-  const close = () => modal.classList.add("hidden");
-  document.getElementById("modalClose").onclick = close;
-  document.getElementById("modalBackdrop").onclick = close;
-
-  modal.classList.remove("hidden");
 }
 
 function renderAll() {
@@ -405,16 +311,9 @@ async function main() {
   mp.value = ymFromISO(isoToday());
 
   const af = document.getElementById("artistFilter");
-  // ใช้ master artists เป็นหลัก (ให้คนที่ยังไม่มีงานก็โผล่ใน filter)
-  const artistIds = uniqArtistsFromMaster();
-  af.innerHTML = artistIds.map(id => {
-    if (id === "ALL") return `<option value="ALL">ALL</option>`;
-    const a = getArtist(id);
-    return `<option value="${a.artist_id}">${a.name}</option>`;
-  }).join("");
+  af.innerHTML = uniqArtists(DATA).map(a => `<option value="${a}">${a}</option>`).join("");
 
   window.__share = share;
-  window.__openArtist = openArtistModal;
 
   mp.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
   af.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
