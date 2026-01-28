@@ -114,3 +114,20 @@ a.btn { display:inline-block; text-decoration:none; padding:10px 12px; border-ra
   color: inherit;
   text-align:center;
 }
+
+
+/* --- type chip --- */
+.type-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin:6px 0 2px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(0,0,0,.12);
+  background: rgba(0,0,0,.04);
+  font-weight:900;
+  font-size:12px;
+  color: rgba(0,0,0,.72);
+  width: fit-content;
+}

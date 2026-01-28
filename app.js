@@ -68,37 +68,41 @@ function buildArtistDisplay(artistIdsCSV) {
 }
 
 
-// แปลง date จาก API ให้เหลือ YYYY-MM-DD
-function normalizeDate(val) {
-  const s = String(val || "").trim();
-  if (!s) return "";
-  // ถ้าเป็น ISO: 2026-01-16T17:00:00.000Z
-  if (s.includes("T")) return s.slice(0,10);
-  // ถ้าเป็น YYYY-MM-DD อยู่แล้ว
+function normalizeDate(v) {
+  if (!v) return "";
+
+  const s = String(v).trim();
+
+  // ✅ API ส่งมาแบบนี้แล้ว: 2026-01-23
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  return s;
+
+  // fallback เผื่อมี format อื่น
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return "";
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-// แปลง time จาก API ให้เป็น HH:mm หรือ All Day
-function normalizeTime(val) {
-  const s = String(val || "").trim();
-  if (!s) return "";
-  if (s.toLowerCase().includes("all day")) return "All Day";
-  // ดึง HH:MM จากข้อความยาว เช่น Sat Dec 30 1899 13:00:00 GMT+...
+
+function normalizeTime(v) {
+  if (!v) return "";
+
+  const s = String(v).trim();
+
+  // ✅ API ส่งมาแบบนี้แล้ว: 08:30
+  if (/^\d{2}:\d{2}$/.test(s)) return s;
+
+  // fallback เผื่อหลุดมาเป็น "8:30"
   const m = s.match(/(\d{1,2}):(\d{2})/);
-  if (m) return `${m[1].padStart(2,"0")}:${m[2]}`;
-  // เผื่อคนกรอก 8.30 AM
-  const m2 = s.match(/(\d{1,2})\.(\d{2})\s*(AM|PM)/i);
-  if (m2) {
-    let hh = parseInt(m2[1],10);
-    const mm = m2[2];
-    const ap = m2[3].toUpperCase();
-    if (ap === "PM" && hh !== 12) hh += 12;
-    if (ap === "AM" && hh === 12) hh = 0;
-    return `${String(hh).padStart(2,"0")}:${mm}`;
-  }
-  return s;
+  if (m) return `${String(m[1]).padStart(2, "0")}:${m[2]}`;
+
+  return "";
 }
+
+
 
 function isPrivateLocation(location) {
   const s = String(location || "").toLowerCase();
@@ -117,6 +121,20 @@ function renderLocationLine(location) {
   if (isLiveLocation(location)) return `📺 ${location}`;
   return `📍 ${location}`;
 }
+
+function renderTypeChip(type) {
+  const t = String(type || "").trim();
+  if (!t) return "";
+
+  // emoji helper: keep it cute + readable
+  const isPrivate = /เฉพาะผู้มีสิทธิ์|private|เฉพาะผู้ได้รับเชิญ/i.test(t);
+  const isCheer = /ให้กำลังใจ|เชียร์|รอบงาน/i.test(t);
+  const isLive = /live|ไลฟ์|facebook|youtube|tiktok/i.test(t);
+
+  const icon = isPrivate ? "🔒" : isCheer ? "💖" : isLive ? "📺" : "✨";
+  return `<div class="type-chip">${icon} ${t}</div>`;
+}
+
 
 function fmtTime(t) {
   return (t === "All Day") ? "All Day" : (t || "-");
@@ -339,6 +357,8 @@ function renderDayList(ym, artist) {
       <div class="card">
         <div class="small">${fmtTime(item.time)}</div>
         <div class="title">${item.title}</div>
+        
+        ${renderTypeChip(item.type)}
         <div class="small">${renderLocationLine(item.location)}</div>
 
         ${item.artist_display ? `<div class="small">👤 ${item.artist_display}</div>` : ""}
