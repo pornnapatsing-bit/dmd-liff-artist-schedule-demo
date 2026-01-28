@@ -126,19 +126,18 @@ function renderTypeChip(type) {
   const t = String(type || "").trim();
   if (!t) return "";
 
-  // emoji helper: keep it cute + readable
   const isPrivate = /เฉพาะผู้มีสิทธิ์|private|เฉพาะผู้ได้รับเชิญ/i.test(t);
   const isCheer = /ให้กำลังใจ|เชียร์|รอบงาน/i.test(t);
   const isLive = /live|ไลฟ์|facebook|youtube|tiktok/i.test(t);
 
-  const icon = isPrivate ? "🔒" : isCheer ? "💖" : isLive ? "📺" : "✨";
-  return `<div class="type-chip">${icon} ${t}</div>`;
+  const icon = isPrivate ? "🔒"
+              : isCheer ? "💖"
+              : isLive ? "📺"
+              : "✨";
+
+  return `<div class="type-text">${icon} ${t}</div>`;
 }
 
-
-function fmtTime(t) {
-  return (t === "All Day") ? "All Day" : (t || "-");
-}
 
 function googleCalLink(item) {
   // แบบง่าย: สร้าง event ใน Google Calendar (เหมาะพอร์ต)
@@ -357,11 +356,11 @@ function renderDayList(ym, artist) {
       <div class="card">
         <div class="small">${fmtTime(item.time)}</div>
         <div class="title">${item.title}</div>
-        
-        ${renderTypeChip(item.type)}
-        <div class="small">${renderLocationLine(item.location)}</div>
 
         ${item.artist_display ? `<div class="small">👤 ${item.artist_display}</div>` : ""}
+
+        ${renderTypeChip(item.type)}
+
         ${pills}
       </div>
     `;
