@@ -144,11 +144,11 @@ ${renderLocationLine(item.location)}
 async function fetchSchedule() {
   const res = await fetch(API_URL);
   if (!res.ok) throw new Error("API error: " + res.status);
+
   const payload = await res.json();
 
-  // รองรับทั้งแบบเก่า (array) และแบบใหม่ ({events, artists})
-  const rawEvents = Array.isArray(payload) ? payload : (payload.events || []);
-  const rawArtists = Array.isArray(payload) ? [] : (payload.artists || []);
+  const rawEvents = payload.events || payload;
+  const rawArtists = payload.artists || [];
 
   // events
   DATA = rawEvents.map(x => ({
@@ -172,6 +172,7 @@ async function fetchSchedule() {
 
   ARTIST_MAP = new Map(ARTISTS.map(a => [a.artist_id, a]));
 }
+
 
 function filterMonthData(ym, artist) {
   return DATA.filter(x => {
