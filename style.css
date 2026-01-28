@@ -23,7 +23,7 @@ input[type="month"], select { width:100%; padding:10px; border-radius:12px; bord
 .day.selected { outline:2px solid var(--ink); background:#fff; }
 
 .badge {
-  position:absolute; right:6px; bottom:6px; top:auto;
+  position:absolute; right:8px; top:8px;
   font-size:10px; padding:2px 7px; border-radius:999px;
   background:var(--ink); color:#fff;
 }
@@ -46,82 +46,5 @@ a.btn { display:inline-block; text-decoration:none; padding:10px 12px; border-ra
 .note { margin: 10px 4px 18px; font-size: 12px; color: var(--muted); }
 
 
-/* --- artist pills + modal --- */
-.pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-.pill-artist{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:7px 10px 7px 8px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.12);
-  background: rgba(0,0,0,.04);
-  cursor:pointer;
-  user-select:none;
-  transition: transform .08s ease, box-shadow .08s ease;
-}
-.pill-artist:active{ transform: scale(.98); }
-.pill-artist:hover{ box-shadow: 0 10px 20px rgba(17,17,17,.10); }
-.pill-artist img{
-  width:22px; height:22px; border-radius:999px; object-fit:cover;
-  border:1px solid rgba(0,0,0,.12);
-}
-.pill-artist span{ font-weight:900; font-size:12px; }
-
-.modal.hidden{ display:none; }
-.modal{ position:fixed; inset:0; z-index:9999; }
-.modal-backdrop{
-  position:absolute; inset:0;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(4px);
-}
-.modal-sheet{
-  position:absolute; left:50%; top:50%;
-  transform: translate(-50%, -50%);
-  width:min(420px, calc(100vw - 24px));
-  background:#fff;
-  border-radius:20px;
-  border:1px solid rgba(0,0,0,.10);
-  box-shadow: 0 18px 50px rgba(0,0,0,.22);
-  padding:14px;
-}
-.modal-close{
-  position:absolute; right:10px; top:10px;
-  width:36px; height:36px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.10);
-  background:#fff;
-  font-size:16px;
-  cursor:pointer;
-}
-.modal-header{ display:flex; gap:12px; align-items:center; padding:6px 4px 2px; }
-.modal-hero{
-  width:72px; height:72px; border-radius:18px;
-  overflow:hidden;
-  border:1px solid rgba(0,0,0,.10);
-}
-.modal-hero img{ width:100%; height:100%; object-fit:cover; display:block; }
-.modal-title{ font-size:18px; font-weight:900; }
-.modal-sub{ color: rgba(0,0,0,.58); margin-top:4px; font-weight:800; }
-.modal-actions{ display:flex; gap:10px; margin-top:14px; }
-.ghost{
-  flex:1;
-  padding:10px 12px;
-  border-radius:14px;
-  border:1px solid rgba(0,0,0,.12);
-  background: rgba(0,0,0,.04);
-  font-weight:900;
-  cursor:pointer;
-  text-decoration:none;
-  color: inherit;
-  text-align:center;
-}
-
-.type-text{
-  margin-top: 2px;
-  margin-bottom: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: rgba(0,0,0,.55);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+/* Type line (secondary info) */
+.type-text{ margin-top:4px; margin-bottom:6px; font-size:13px; font-weight:600; color:var(--muted); display:flex; align-items:center; gap:6px; }

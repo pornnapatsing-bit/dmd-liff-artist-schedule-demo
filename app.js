@@ -75,6 +75,19 @@ function renderLocationLine(location) {
   if (isPrivateLocation(location)) return "🔒 เฉพาะผู้มีสิทธิ์เข้าร่วมงาน";
   if (isLiveLocation(location)) return `📺 ${location}`;
   return `📍 ${location}`;
+
+
+function renderTypeText(type) {
+  const t = String(type || "").trim();
+  if (!t) return "";
+
+  const isPrivate = /เฉพาะผู้มีสิทธิ์|private|เฉพาะผู้ได้รับเชิญ/i.test(t);
+  const isCheer = /ให้กำลังใจ|เชียร์|รอบงาน/i.test(t);
+  const isLive = /live|ไลฟ์|facebook|youtube|tiktok/i.test(t);
+
+  const icon = isPrivate ? "🔒" : isCheer ? "💖" : isLive ? "📺" : "✨";
+  return `<div class="type-text">${icon} ${t}</div>`;
+}
 }
 
 function fmtTime(t) {
@@ -230,12 +243,8 @@ function renderDayList(ym, artist) {
         <div class="small">${renderLocationLine(item.location)}</div>
 
         ${item.artist_display ? `<div class="small">👤 ${item.artist_display}</div>` : ""}
+        ${renderTypeText(item.type)}
         <div class="tags">${tags}</div>
-
-        <div class="btns">
-          <button onclick='window.__share(${JSON.stringify(item).replaceAll("'","\\'")})'>Share</button>
-          <a class="btn" href="${calLink}" target="_blank" rel="noreferrer">Add to Calendar</a>
-        </div>
       </div>
     `;
   });
