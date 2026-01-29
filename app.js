@@ -439,11 +439,9 @@ async function main() {
 
   window.__openArtist = openArtistModal;
 
-  mp.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
-  af.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
-  });
+  mp.addEventListener("change", renderAll);
+  af.addEventListener("change", renderAll);
 
-  renderAll();
 }
 
 
