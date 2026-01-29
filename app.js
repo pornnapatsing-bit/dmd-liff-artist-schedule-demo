@@ -389,21 +389,6 @@ function escapeHtml(s) {
 }
 
 // ===== helper functions =====
-function avatarUrlFor(name, imageUrl) {
-  const url = String(imageUrl || "").trim();
-  if (url) return url;
-
-  const letter = (name || "?").trim().slice(0, 1).toUpperCase();
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96">
-      <rect width="100%" height="100%" rx="48" ry="48" fill="#E5E7EB"/>
-      <text x="50%" y="55%" text-anchor="middle" font-size="42"
-            font-family="system-ui, -apple-system, Segoe UI"
-            fill="#111">${letter}</text>
-    </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 
 async function main() {
   await liff.init({ liffId: LIFF_ID });
@@ -428,20 +413,28 @@ async function main() {
   await fetchSchedule();
 
   const mp = document.getElementById("monthPicker");
-  mp.value = ymFromISO(isoToday());
-
+  // ตั้งเดือนเริ่มต้นให้เป็นเดือนที่มีข้อมูล (กันเคสจอโล่ง)
+  const todayYm = ymFromISO(isoToday());
+  const dataYm = (DATA && DATA.length && DATA[0].date) ? ymFromISO(DATA[0].date) : todayYm;
+  const hasToday = DATA.some(e => (e.date || "").startsWith(todayYm));
+  mp.value = hasToday ? todayYm : dataYm;
   const af = document.getElementById("artistFilter");
   if (ARTISTS.length) {
     af.innerHTML = [`<option value="ALL">ALL</option>`, ...ARTISTS.map(a => `<option value="${a.artist_id}">${a.name}</option>`)].join("");
+  af.value = "ALL";
   } else {
     af.innerHTML = uniqArtists(DATA).map(a => `<option value="${a}">${a}</option>`).join("");
+  af.value = "ALL";
   }
 
   window.__openArtist = openArtistModal;
 
-  mp.addEventListener("change", renderAll);
-  af.addEventListener("change", renderAll);
+  mp.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
+  af.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
 
+  // ✅ แสดงปฏิทิน + รายการทันทีตั้งแต่เปิดหน้า
+  selectedDateISO = null;
+  renderAll();
 }
 
 
