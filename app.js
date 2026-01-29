@@ -100,6 +100,11 @@ function normalizeTime(val) {
   return s;
 }
 
+function getTypeMode() {
+  const el = document.querySelector('input[name="typeFilter"]:checked');
+  return el ? el.value : "ALL";
+}
+
 function isPrivateLocation(location) {
   const s = String(location || "").toLowerCase();
   return s.includes("เฉพาะผู้มีสิทธิ์") || s.includes("private") || s.includes("เฉพาะผู้ได้รับเชิญ");
@@ -375,11 +380,13 @@ function renderDayList(ym, artist, typeMode) {
 function renderAll() {
   const ym = document.getElementById("monthPicker").value;
   const artist = document.getElementById("artistFilter").value;
+  const typeMode = getTypeMode(); // ✅ เพิ่มบรรทัดนี้
 
   const monthData = filterMonthData(ym, artist, typeMode);
   buildCalendar(ym, monthData);
-  renderDayList(ym, artist, (document.querySelector('input[name="typeMode"]:checked')?.value || "all"));
+  renderDayList(ym, artist, typeMode);
 }
+
 
 
 function escapeHtml(s) {
@@ -456,4 +463,11 @@ async function main() {
 main().catch(err => {
   document.getElementById("welcome").textContent = `Error: ${err.message}`;
   console.error(err);
+});
+
+document.querySelectorAll('input[name="typeFilter"]').forEach(radio => {
+  radio.addEventListener("change", () => {
+    selectedDateISO = null;
+    renderAll();
+  });
 });
