@@ -100,11 +100,6 @@ function normalizeTime(val) {
   return s;
 }
 
-function getTypeMode() {
-  const el = document.querySelector('input[name="typeFilter"]:checked');
-  return el ? el.value : "ALL";
-}
-
 function isPrivateLocation(location) {
   const s = String(location || "").toLowerCase();
   return s.includes("เฉพาะผู้มีสิทธิ์") || s.includes("private") || s.includes("เฉพาะผู้ได้รับเชิญ");
@@ -200,19 +195,16 @@ async function fetchSchedule() {
   })).filter(x => x.date);
 }
 
-function filterMonthData(ym, artist, typeMode) {
+function filterMonthData(ym, artist) {
   return DATA.filter(x => {
     if (!x.date.startsWith(ym)) return false;
 
     // artist filter
     if (artist !== "ALL" && !parseArtists(x.artists).includes(artist)) return false;
-
-    // type mode filter
-    if (typeMode === "cheer" && !isCheerType(x.type)) return false;
-
     return true;
   });
 }
+
 
 function countByDate(list) {
   const map = new Map();
@@ -331,8 +323,8 @@ function openArtistModal(artistId) {
   modal.classList.remove("hidden");
 }
 
-function renderDayList(ym, artist, typeMode) {
-  const monthData = filterMonthData(ym, artist, typeMode);
+function renderDayList(ym, artist) {
+  const monthData = filterMonthData(ym, artist);
 
   if (!selectedDateISO) {
     const today = isoToday();
@@ -380,13 +372,11 @@ function renderDayList(ym, artist, typeMode) {
 function renderAll() {
   const ym = document.getElementById("monthPicker").value;
   const artist = document.getElementById("artistFilter").value;
-  const typeMode = getTypeMode(); // ✅ เพิ่มบรรทัดนี้
 
-  const monthData = filterMonthData(ym, artist, typeMode);
+  const monthData = filterMonthData(ym, artist);
   buildCalendar(ym, monthData);
-  renderDayList(ym, artist, typeMode);
+  renderDayList(ym, artist);
 }
-
 
 
 function escapeHtml(s) {
@@ -451,9 +441,6 @@ async function main() {
 
   mp.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
   af.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
-
-  document.querySelectorAll('input[name="typeMode"]').forEach(r => {
-    r.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
   });
 
   renderAll();
@@ -463,11 +450,4 @@ async function main() {
 main().catch(err => {
   document.getElementById("welcome").textContent = `Error: ${err.message}`;
   console.error(err);
-});
-
-document.querySelectorAll('input[name="typeFilter"]').forEach(radio => {
-  radio.addEventListener("change", () => {
-    selectedDateISO = null;
-    renderAll();
-  });
 });
