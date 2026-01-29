@@ -118,6 +118,10 @@ function renderLocationLine(location) {
   return `📍 ${location}`;
 }
 
+function isCheerType(type){
+  return /ให้กำลังใจ|เชียร์|รอบงาน/i.test(String(type||""));
+}
+
 function renderTypeText(type) {
   const t = String(type || "").trim();
   if (!t) return "";
@@ -191,11 +195,17 @@ async function fetchSchedule() {
   })).filter(x => x.date);
 }
 
-function filterMonthData(ym, artist) {
+function filterMonthData(ym, artist, typeMode) {
   return DATA.filter(x => {
     if (!x.date.startsWith(ym)) return false;
-    if (artist === "ALL") return true;
-    return parseArtists(x.artists).includes(artist);
+
+    // artist filter
+    if (artist !== "ALL" && !parseArtists(x.artists).includes(artist)) return false;
+
+    // type mode filter
+    if (typeMode === "cheer" && !isCheerType(x.type)) return false;
+
+    return true;
   });
 }
 
@@ -316,8 +326,8 @@ function openArtistModal(artistId) {
   modal.classList.remove("hidden");
 }
 
-function renderDayList(ym, artist) {
-  const monthData = filterMonthData(ym, artist);
+function renderDayList(ym, artist, typeMode) {
+  const monthData = filterMonthData(ym, artist, typeMode);
 
   if (!selectedDateISO) {
     const today = isoToday();
@@ -366,9 +376,9 @@ function renderAll() {
   const ym = document.getElementById("monthPicker").value;
   const artist = document.getElementById("artistFilter").value;
 
-  const monthData = filterMonthData(ym, artist);
+  const monthData = filterMonthData(ym, artist, typeMode);
   buildCalendar(ym, monthData);
-  renderDayList(ym, artist);
+  renderDayList(ym, artist, (document.querySelector('input[name="typeMode"]:checked')?.value || "all"));
 }
 
 
@@ -434,6 +444,10 @@ async function main() {
 
   mp.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
   af.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
+
+  document.querySelectorAll('input[name="typeMode"]').forEach(r => {
+    r.addEventListener("change", () => { selectedDateISO = null; renderAll(); });
+  });
 
   renderAll();
 }
